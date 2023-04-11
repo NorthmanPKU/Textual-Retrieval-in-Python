@@ -1,30 +1,30 @@
-# 文本检索实验报告
-## 一、重要文件介绍
-- `GUI.py`: 用户端
-- `local_server.ipynb`: 服务器端
-- `dataprocessing.ipynb`: 数据处理相关操作
-- `wordseq.txt`: 词表，都使用此文件中单词顺序
-- `middlesave.txt`: 对于dataframe的中间存档
-- `tfidf.txt`: tfidf矩阵存档
-- `sim_article_05.txt`: 相似文章id字典
-- `synonym.txt`: 相似词字典
-## 二、任务完成情况
-1. 数据处理
-    - `完成于dataprocessing.ipynb`: 读入数据集，对数据集中的文章进行去标点、分词、去除停用词及低频词，并对单词进行标准化
-    - `完成于dataprocessing.ipynb`: 构建词典，保存为vocab.txt
-2. 检索排序
-    - `完成于local_server.ipynb的naive_articleSort()`: 根据输入的检索词检索文章，并对检索到的文章进行初步排序并返回。初步排序方法为：构建tf-idf矩阵，对于每篇文章加总关键词对应值作为相关性得分，按得分从大到小返回。
-    - `完成于local_server.ipynb和GUI.py`: 搭建C/S架构，具体情况：
-      - 由于单次传送不可过大，每次只传送一篇文章的标题和内容。在传送前先将“共有多少文章需要传送”的数字传送给客户端
-      - 在操作过程中发现容易出现粘包问题，因此每次传输时先用`struct.pack()`传送要发送的字符串的大小，接收方使用`struct.unpack()`解包后按照此大小继续接收内容，保证所读取的大小严格等于想读取的大小
-3. 排序优化
-    -  `完成于local_server.ipynb`: 对于文档-词的TF-IDF矩阵，将每行视为用词语的TF-IDF值表示的文章向量，对该矩阵进行降维操作，得到了低维的文章向量，然后计算得到了文章之间的余弦相似度。更进一步使用HITS算法（将余弦距离<0.5的两篇文章视为相互关联），首先使用上文提到的`naive_articleSort()`方法初步排序，然后取得所得结果，将关联文章加入进来，求得这些文章中每篇的$authority$值，按从大到小排序得到优化的的检索结果。
-4. 文章聚类
-    - `完成于dataprocessing.ipynb`: 通过`Kmeans`对文章向量进行聚类，并与原数据集中的正确分类进行比较，计算$ Purity $，可达到$ 0.95 $，较为准确。
-5. 相似词
-    - `完成于dataprocessing.ipynb`: 使用之前得到的TF-IDF矩阵生成词向量，得到词向量计算余弦相似度后取余弦距离$ <0.39 $的词为相似词（此时平均每个词有2个左右的相似词）来挖掘每个词的相似词。结果保存为synonym.txt
-6. 模糊匹配
-    - `完成于GUI.py`: 向服务器发送$1$或$0$表示模糊匹配或精确匹配
-    - `完成于local_server.ipynb`: 读入保存好的相似词词典，若收到$ 1 $，对于输入的检索词，通过拓展相似词的方式进行模糊匹配。利用相似词拓展检索结果集合，并排序。
-7. 加分项
-    - `完成于GUI.py`: 优化TKinter的功能，使用“精确匹配”“模糊匹配”两个按钮让用户自行选择
+# Text Retrieval Experiment Report
+## I. Important Files Introduction
+- `GUI.py`: User interface
+- `local_server.ipynb`: Server side
+- `dataprocessing.ipynb`: Data processing related operations
+- `wordseq.txt`: Word list, all using the word order in this file
+- `middlesave.txt`: Intermediate save for dataframe
+- `tfidf.txt`: tfidf matrix save
+- `sim_article_05.txt`: Similar article ID dictionary
+- `synonym.txt`: Similar words dictionary
+## II. Methods
+1. Data processing
+    - `Completed in dataprocessing.ipynb`: Read the dataset, process the articles in the dataset by removing punctuation, tokenizing, removing stop words and low-frequency words, and standardizing words
+    - `Completed in dataprocessing.ipynb`: Construct a dictionary and save it as vocab.txt
+2. Retrieval and sorting
+    - `Completed in local_server.ipynb's naive_articleSort()`: Retrieve and preliminarily sort the retrieved articles based on the entered search term. The preliminary sorting method is: construct a tf-idf matrix, sum the corresponding values of the keywords for each article as the relevance score, and return them in descending order of score.
+    - `Completed in local_server.ipynb and GUI.py`: Build a C/S architecture, with the following specifics:
+      - Since a single transfer cannot be too large, only one article title and content are transferred each time. Before transferring, the number of "how many articles need to be transferred" is sent to the client first.
+      - During the operation, it was found that the sticky packet problem was prone to occur, so the size of the string to be sent was sent first using `struct.pack()`, and the receiving end used `struct.unpack()` to unpack and continue to receive the content according to this size, ensuring that the size read was strictly equal to the desired size.
+3. Sorting optimization
+    - `Completed in local_server.ipynb`: For the document-word TF-IDF matrix, each row is considered an article vector represented by the word's TF-IDF value, and the matrix is dimensionality-reduced to obtain low-dimensional article vectors, and then the cosine similarity between articles is calculated. Further, the HITS algorithm is used (cosine distance < 0.5 between two articles is considered as mutual association). First, use the previously mentioned `naive_articleSort()` method for preliminary sorting, then obtain the results, add the associated articles, and calculate the $authority$ value for each article in these articles, sort them in descending order to obtain the optimized retrieval results.
+4. Article clustering
+    - `Completed in dataprocessing.ipynb`: Cluster article vectors using `Kmeans` and compare them with the correct classification in the original dataset, calculating $Purity$, which can reach $0.95$, which is quite accurate.
+5. Similar words
+    - `Completed in dataprocessing.ipynb`: Use the previously obtained TF-IDF matrix to generate word vectors, obtain word vectors, calculate cosine similarity, and take words with cosine distance $<0.39$ as similar words (at this point, on average, each word has about 2 similar words) to mine similar words for each word. The results are saved as synonym.txt
+6. Fuzzy matching
+    - `Completed in GUI.py`: Send $1$ or $0$ to the server to indicate fuzzy matching or exact matching
+    - `Completed in local_server.ipynb`: Read the saved similar words dictionary, and if $1$ is received, perform fuzzy matching by expanding similar words for the input search term. Use similar words to expand the search results set and sort them.
+7. Bonus items
+    - Completed in GUI.py: Optimize TKinter functionality, using "Exact Match" and "Fuzzy Match" buttons to allow users to choose for themselves
